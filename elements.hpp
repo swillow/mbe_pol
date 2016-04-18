@@ -12,9 +12,9 @@ struct element {
   double mass;
 };
 
+//    {1, "D", 2.014102}, // 2H
 static std::vector<element> element_info
 {   {1, "H", 1.007825}, // 1H
-    {1, "D", 2.014102}, // 2H
     {2, "He",4.002603}, // 2 He
     {3, "Li",7.016004},// 7Li
     {4, "Be",9.012182}, //9 Be

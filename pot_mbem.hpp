@@ -2,12 +2,12 @@
 #define W_POT_MBEM_H
 
 #include <armadillo>
+#include <vector>
 
+namespace willow { namespace mbem {
 
-namespace willow { namespace embem {
-
-extern double pot_mbem (const arma::mat& pos,
-			const vector<unsigned short>& Zs);
+extern double pot (const arma::mat& pos,
+		   const std::vector<unsigned short>& Zs);
 
 
 } } // namespace willow::embem

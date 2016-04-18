@@ -4,23 +4,20 @@
 #include <string>
 #include <iomanip>
 #include <armadillo>
-#include <libint2.hpp>
-//#include "input.hpp"
+
 #include "geom.hpp"
 #include "pot_embem.hpp"
 #include "pot_mbem.hpp"
 
 using namespace std;
 using namespace willow;
-using namespace willow::embem;
 // 
 // Unit : AU
 // 
 int main (int argc, char *argv[])
 {
-  
-  libint2::initialize ();
-  libint2::Shell::do_enforce_unit_normalization (false);
+
+  embem::pot_init ();
   
   const string fname_geom  = (argc > 1) ? argv[1] : "cage.xyz";
   
@@ -36,7 +33,7 @@ int main (int argc, char *argv[])
   
   cout << "START Embedded Many Body Expansion Method " << endl;
   
-  double en_pot = embem::pot_embem (pos_cent, Z_cent, at_Qs);
+  double en_pot = embem::pot (pos_cent, Z_cent, at_Qs);
 
   cout << "embem pot " << setprecision(8) << en_pot << endl << endl;
   
@@ -44,11 +41,12 @@ int main (int argc, char *argv[])
 
   cout << "START Many Body Expansion Method " << endl;
   
-  double en_pot_mbem = embem::pot_mbem (pos_cent, Z_cent);
+  double en_pot_mbem = mbem::pot (pos_cent, Z_cent);
   
   cout << " mbem pot " << setprecision(8) << en_pot_mbem << endl << endl;
 
-  libint2::finalize ();
+  embem::pot_end ();
+
   
   return 0;
   

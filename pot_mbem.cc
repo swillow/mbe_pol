@@ -11,10 +11,11 @@
 // Many-Body Expansion Method (MBEM)
 // 
 
+using namespace std;
 using namespace libint2;
 using namespace willow::qcmol;
 
-namespace willow { namespace embem {
+namespace willow { namespace mbem {
 
 
 static arma::vec pot_mbem_monomer (const arma::mat& pos,
@@ -25,11 +26,11 @@ static double pot_mbem_dimer   (const arma::mat& pos,
 				const arma::vec& en_mons);
 
 
-static double qcmol_rhf   (const vector<Atom>& atoms_qm);
+static double qcmol_rhf   (const vector<Atom>& atoms);
 
 			   
-double pot_mbem(const arma::mat& pos,
-		const vector<unsigned short>& Zs)
+double pot (const arma::mat& pos,
+	    const vector<unsigned short>& Zs)
 {
 
   arma::vec en_mons = pot_mbem_monomer (pos, Zs);
@@ -127,14 +128,14 @@ double pot_mbem_dimer (const arma::mat& pos,
 
 
 
-double qcmol_rhf (const vector<Atom>& atoms_qm)
+double qcmol_rhf (const vector<Atom>& atoms)
 {
 
-  BasisSet bs ("aug-cc-pVDZ", atoms_qm);
+  BasisSet bs ("aug-cc-pVDZ", atoms);
 
-  Integrals ints (atoms_qm, bs);
+  Integrals ints (atoms, bs);
 
-  RHF rhf (atoms_qm, bs, ints, false);
+  RHF rhf (atoms, bs, ints, false);
 
   return rhf.energy ();
   
