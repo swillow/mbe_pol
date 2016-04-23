@@ -10,27 +10,35 @@
 
 #include "constant.hpp"
 #include "elements.hpp"
+#include "message.hpp"
 
-
-using namespace std;
 
 namespace willow {
 
 
-inline arma::mat read_geom (const string& fname, vector<string>& at_name, vector<double>& at_Q)
+inline arma::mat read_geom (const std::string& fname,
+			    std::vector<std::string>& at_name,
+			    arma::vec& at_Q)
 {
     
   std::string str_geom;
-  
-  std::ifstream ifs_geom (fname);
-  assert (ifs_geom.good());
+
+  const int sys_me = mpi::rank ();
+
+  if (sys_me == 0) {
+    std::ifstream ifs_geom (fname);
+    assert (ifs_geom.good());
     
-  // Read the entire file into a string that can be broadcasted
-  // 
-  std::ostringstream oss;
-  //is_geom >> oss.rdbuf();
-  oss << ifs_geom.rdbuf ();
-  str_geom = oss.str();
+    // Read the entire file into a string that can be broadcasted
+    // 
+    std::ostringstream oss;
+    //is_geom >> oss.rdbuf();
+    oss << ifs_geom.rdbuf ();
+    str_geom = oss.str();
+  }
+
+  mpi::barrier ();
+  mpi::broadcast_string (str_geom);
   
   std::istringstream is(str_geom);
   // xyz file
@@ -40,6 +48,7 @@ inline arma::mat read_geom (const string& fname, vector<string>& at_name, vector
   is >> natom;
   
   arma::mat pos(3,natom);
+  at_Q.set_size (natom);
   
   std::string rest_of_line;
   std::getline (is, rest_of_line);
@@ -60,7 +69,7 @@ inline arma::mat read_geom (const string& fname, vector<string>& at_name, vector
     iss >> name >> x >> y >> z >> chg;
     
     at_name.push_back (name);
-    at_Q.push_back (chg);
+    at_Q(ia) = chg;
     double *xyz = pos.colptr(ia);
     // length unit is A
     /*xyz[0] = x;
@@ -79,36 +88,19 @@ inline arma::mat read_geom (const string& fname, vector<string>& at_name, vector
 }
 
 
-inline vector<double> atom_to_phys_mass (const vector<string>& at_name)
+
+
+inline arma::ivec atom_to_Z (std::vector<std::string>& at_name)
 {
 
   const size_t natom = at_name.size();
-  vector<double> at_mass;
+  arma::ivec Z_list(natom);
 
-  for (const auto symbol : at_name) {
+  for (auto ia = 0; ia < natom; ++ia) {
+    const auto symbol = at_name[ia];
     for (const auto& e : willow::element_info) {
       if (symbol == e.symbol) {
-	at_mass.push_back(e.mass);
-	break;
-      }
-    }
-  }
-
-  return at_mass;
-  
-}
-
-
-inline vector<unsigned short> atom_to_Z (vector<string>& at_name)
-{
-
-  const size_t natom = at_name.size();
-  vector<unsigned short> Z_list;
-
-  for (const auto symbol : at_name) {
-    for (const auto& e : willow::element_info) {
-      if (symbol == e.symbol) {
-	Z_list.push_back(e.Z);
+	Z_list(ia) = e.Z;
 	break;
       }
     }
