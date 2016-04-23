@@ -16,9 +16,9 @@ extern int size ();
 
 extern void barrier ();
 
-extern void broadcast_dbl (double* data, int count);
+extern void broadcast_dbl (arma::vec& data);
 
-extern void broadcast_int (int* data, int count);
+extern void broadcast_int (arma::ivec& data);
 
 extern void broadcast_string (std::string& data);
 

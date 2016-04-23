@@ -51,32 +51,37 @@ void barrier ()
 }
 
 
-void broadcast_dbl (double* data, int count) 
+void broadcast_dbl (arma::vec& data) 
 {
 
-  MPI::COMM_WORLD.Bcast (data, count, MPI::DOUBLE, 0);
+  const size_t count = data.n_elem;
+  
+  MPI::COMM_WORLD.Bcast (data.memptr(), count, MPI::DOUBLE, 0);
   
 };
 
-void broadcast_int (int* data, int count)
+void broadcast_int (arma::ivec& data)
 {
-
-  MPI::COMM_WORLD.Bcast (data, count, MPI_INT, 0);
+  const size_t count = data.n_elem;
+  
+  MPI::COMM_WORLD.Bcast (data.memptr(), count, MPI_INT, 0);
   
 };
 
 
 void broadcast_string (std::string& data)
 {
-  int str_len = data.length() + 1;
-
-  mpi::broadcast_int (&str_len, 1);
-  mpi::barrier ();
+  arma::ivec str_len(1);
+  str_len(0) = data.length() + 1;
   
-  char* cstr = new char [str_len]; 
+  mpi::broadcast_int (str_len);
+  mpi::barrier ();
+
+  const size_t slen = str_len(0);
+  char* cstr = new char [slen]; 
   std::strcpy (cstr, data.c_str());
   
-  MPI::COMM_WORLD.Bcast (cstr, str_len, MPI::CHAR, 0);
+  MPI::COMM_WORLD.Bcast (cstr, slen, MPI::CHAR, 0);
 
   data = std::string (cstr);
 

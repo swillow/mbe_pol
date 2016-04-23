@@ -131,7 +131,7 @@ void esp_update (const arma::mat& pos,
     mpi::barrier ();
     // allreduce = reduce + broadcast
     mpi::reduce_dbl_sum (Qs_new);
-    mpi::broadcast_dbl (Qs_new.memptr(), natom);
+    mpi::broadcast_dbl (Qs_new);
 
     double diff = 0.0;
     for (auto ia = 0; ia < natom; ++ia) {
@@ -246,7 +246,7 @@ arma::vec pot_embem_monomer (const arma::mat& pos,
   
   // all_reduce = reduce + broadcast
   mpi::reduce_dbl_sum (en_mons); 
-  mpi::broadcast_dbl  (en_mons.memptr(), nwat);
+  mpi::broadcast_dbl  (en_mons);
   
   return en_mons;
   
@@ -369,7 +369,8 @@ arma::vec pot_mbem_monomer (const arma::mat& pos,
   
   mpi::barrier ();
   mpi::reduce_dbl_sum (en_mons);
-
+  mpi::broadcast_dbl  (en_mons);
+  
   return en_mons;
   
 }
