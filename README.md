@@ -1,5 +1,5 @@
 # w-embem
-w-embem is a simple program of the embedded many-body expansion method.
+w-embem is a simple program of the Embedded Many-Body Expansion Method.
 
 
 I used 'w-qcmol' to calculate the energy of the water hexamer (cage.xyz) at RHF/aug-cc-pVDZ.
