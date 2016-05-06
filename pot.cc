@@ -446,11 +446,11 @@ double qcmol_rhf (const vector<libint2::Atom>& atoms,
   libint2::BasisSet bs ("aug-cc-pVDZ", atoms);
 
   qcmol::Integrals ints (atoms, bs, atoms_Q);
-
+  
   qcmol::RHF rhf (atoms, bs, ints, round(qm_chg), false, atoms_Q);
 
 
-  return rhf.energy ();
+  return rhf.rhf_energy ();
   
 }
 
