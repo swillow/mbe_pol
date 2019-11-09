@@ -1,16 +1,21 @@
-# w-embem
-w-embem is a simple program of the Embedded Many-Body Expansion Method.
+# mbe_pol (Many-Body Exansion with Polarization Energy)
 
+MBE-pol is developed based on fragment-based method for quantum mechanics (QM) calculations on larger molecular systems and condensed phases as well. 
 
-I used 'w-qcmol' to calculate the energy of the water hexamer (cage.xyz) at RHF/aug-cc-pVDZ.
+The potential energy of the system is defined as 
 
-** Method  (CPU time) : Energy  
-* RHF (7 min) : -456.29707
-* EMBEM (34 sec) : -456.29728
-* MBEM (33 sec) : -456.28309
+$E = E_\mathrm{MBE(2)} + \kappa \sum_I E_I^\mathrm{pol},$
 
-Here, MBEM (Many-Body Expansion Method) calculates the energies of monomers and dimers without the embedding field.
+with
 
+$E_\mathrm{MBE(2)}  =  \sum_I ( E_{I} - E_I^\mathrm{min}) + \sum_{I > J}  ( E_{IJ} -
+E_{I} - E_{J})$
 
-EMBEM (Embedded Many-Body Expansion Method) calculate the energies of monomers and dimers with the embedding field.
+$E_I^\mathrm{pol} 
+ =  \langle \Psi_{I:Q_I} | \hat{H}_{I:Q_I} | \Psi_{I:Q_I} \rangle -
+\langle \Psi_I | \hat{H}_{I:Q_I} | \Psi_I \rangle$
+
+Here, 
+$\hat{H}_{I:Q_I}  =  \hat{H}_I  + \sum_{i \in I} \sum_{B \in Q_I} \frac{q_B}{ | \pmb{r}_i - \pmb{R}_B |}  + \sum_{A \in I} \sum_{B \in Q_I} \frac{Z_A q_B}{R_{AB}}$
+
 
