@@ -6,10 +6,9 @@
 #include <armadillo>
 
 #include "geom.hpp"
-#include "pot.hpp"
+#include "pes.hpp"
 #include "message.hpp"
 
-using namespace std;
 using namespace willow;
 // 
 // Unit : AU
@@ -21,46 +20,46 @@ int main (int argc, char *argv[])
   mpi::init (argc, argv);
   const auto sys_me = mpi::rank ();
   
-  pot::libint2_init ();
-  cout << std::setprecision (6);
-  cout << std::fixed;
-  
-  const string fname_geom  = (argc > 1) ? argv[1] : "cage.xyz";
-  
-  vector<string>  at_names;
-  arma::vec  at_Qs;
-  arma::mat  pos_cent = read_geom (fname_geom, at_names, at_Qs);
-  arma::ivec Z_cent   = atom_to_Z (at_names);
+  std::cout << std::setprecision (8);
+  std::cout << std::fixed;
 
-  /*
-  pot::esp_update (pos_cent, Z_cent, at_Qs);
-  at_Qs = 0.9*at_Qs;
-  */
+  // xyz file name
+  const std::string fname_geom  = (argc > 1) ? argv[1] : "cage.xyz";
+  // RHF vs MP2
+  const std::string theory      = (argc > 2) ? argv[2] : "RHF";
+  // BasisSet: aug-cc-pvdz, 6-311g**
+  const std::string basis       = (argc > 3) ? argv[3] : "aug-cc-pvdz";
+  // 
+
   
+  std::vector<std::string>  at_names;
+  arma::mat  pos = read_geom (fname_geom, at_names);
+  arma::ivec Zs  = atom_to_Z (at_names);
+
   // -----
-  if (sys_me == 0) {
-    const double en_ref = -456.297066396184;
-    cout << "Reference Energy (RHF/aug-cc-pVDZ)  " 
-	 << en_ref << endl << endl;
-  
-    cout << "START Embedded Many Body Expansion Method " << endl;
-  }
-  
-  double en_pot = pot::embem (pos_cent, Z_cent, at_Qs);
 
   if (sys_me == 0) {
-    cout << "embem pot " << en_pot << endl << endl;
-
-    cout << "START Many Body Expansion Method " << endl;
+    std::cout << "START Embedded Many Body Expansion Method " << std::endl;
   }
+  const std::string method_embe = "EMBE";
+  // Epol (Q): what is Q for Epol?
+  // ESP, RESP, ESP_SCF, RESP_SCF
+  // Here, ESP_SCF and RESP_SCF provide the atomic point charges using the self-consistent field scheme.
   
-  double en_pot_mbem = pot::mbem (pos_cent, Z_cent);
+  const std::string epol_resp_scf = "RESP_SCF";
+  willow::PES embe_pot_grad (pos.n_cols, theory, basis, method_embe, epol_resp_scf);
+  embe_pot_grad.compute (pos, Zs);
+
 
   if (sys_me == 0) {
-    cout << " mbem pot " << en_pot_mbem << endl << endl;
+    std::cout << "START Many Body Expansion Method " << std::endl;
   }
   
-  pot::libint2_end ();
+  
+  const std::string method_mbe = "MBE";
+  const std::string epol_resp  = "RESP";
+  willow::PES mbe_pot_grad (pos.n_cols, theory, basis, method_mbe, epol_resp);
+  mbe_pot_grad.compute (pos, Zs);
 
   mpi::finalize ();
   

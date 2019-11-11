@@ -3,24 +3,25 @@
 AR=ar
 ARFLAGS=-qs
 RANLIB=ranlib
-
-LIBINT2PATH=/usr/local/libint/2.2.0-alpha
+# libint2 directory
+LIBINT2PATH=/home/willow/prog
 LIBINT2INCLUDES = -I$(LIBINT2PATH)/include -I$(LIBINT2PATH)/include/libint2
 
 
-EXECUTABLE = w-embem.x
+EXECUTABLE = mbe_pol.x
 
-# change to icpc for Intel
 CXX = mpic++
 HOME = .
 .SUFFIXES: .cc 
 
 
-CFLAGS = -O2  -ffast-math    -march=native -std=c++11  $(LIBINT2INCLUDES)
-LIBS = ./w-qcmol/libwqcmol.a -L$(LIBINT2PATH)/lib -lint2 -larmadillo -lblas -llapack 
+CFLAGS = -O2  -ffast-math    -march=native -std=c++11  \
+	 -I/usr/include/eigen3 $(LIBINT2INCLUDES)
+
+LIBS = ./w-qcmol/libwqcmol.a -L$(LIBINT2PATH)/lib -lint2 -larmadillo 
 
 
-SRC = main.cc message.cc pot.cc 
+SRC = message.cc pes.cc main.cc
 
 COBJ=$(SRC:.cc=.o)
 

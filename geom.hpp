@@ -17,8 +17,7 @@ namespace willow {
 
 
 inline arma::mat read_geom (const std::string& fname,
-			    std::vector<std::string>& at_name,
-			    arma::vec& at_Q)
+			    std::vector<std::string>& at_name)
 {
     
   std::string str_geom;
@@ -48,7 +47,6 @@ inline arma::mat read_geom (const std::string& fname,
   is >> natom;
   
   arma::mat pos(3,natom);
-  at_Q.set_size (natom);
   
   std::string rest_of_line;
   std::getline (is, rest_of_line);
@@ -64,12 +62,11 @@ inline arma::mat read_geom (const std::string& fname,
     
     std::istringstream iss (line);
     std::string name;
-    double x, y, z, chg;
+    double x, y, z;
     
-    iss >> name >> x >> y >> z >> chg;
+    iss >> name >> x >> y >> z;
     
     at_name.push_back (name);
-    at_Q(ia) = chg;
     double *xyz = pos.colptr(ia);
     // length unit is A
     /*xyz[0] = x;

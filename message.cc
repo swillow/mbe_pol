@@ -1,7 +1,6 @@
 #include <cstring>
 #include <string>
 #include <iostream>
-#include <mpi.h>
 #include "message.hpp"
 
 
@@ -51,33 +50,82 @@ void barrier ()
 }
 
 
-void broadcast_dbl (arma::vec& data) 
+void abort (int errorcode)
+{
+  MPI::COMM_WORLD.Abort(errorcode);
+}
+
+
+void broadcast_dbl   (double& data) 
+{
+
+  const size_t count = 1;
+  
+  MPI::COMM_WORLD.Bcast (&data, count, MPI::DOUBLE, 0);
+  
+}
+
+
+void broadcast_dbl_vec (arma::vec& data) 
 {
 
   const size_t count = data.n_elem;
   
   MPI::COMM_WORLD.Bcast (data.memptr(), count, MPI::DOUBLE, 0);
   
-};
+}
 
-void broadcast_int (arma::ivec& data)
+
+
+void broadcast_dbl_mat (arma::mat& data) 
+{
+
+  const size_t count = data.n_elem;
+  
+  MPI::COMM_WORLD.Bcast (data.memptr(), count, MPI::DOUBLE, 0);
+  
+}
+
+ 
+
+void broadcast_dbl_cube(arma::cube& data) 
+{
+
+  const size_t count = data.n_elem;
+  
+  MPI::COMM_WORLD.Bcast (data.memptr(), count, MPI::DOUBLE, 0);
+  
+}
+
+
+void broadcast_int  (int& data)
+{
+  const size_t count = 1;
+  
+  MPI::COMM_WORLD.Bcast (&data, count, MPI_INT, 0);
+
+}
+
+
+
+void broadcast_int_vec (arma::ivec& data)
 {
   const size_t count = data.n_elem;
   
   MPI::COMM_WORLD.Bcast (data.memptr(), count, MPI_INT, 0);
   
-};
+}
+
 
 
 void broadcast_string (std::string& data)
 {
-  arma::ivec str_len(1);
-  str_len(0) = data.length() + 1;
+  int str_len = data.length() + 1;
   
   mpi::broadcast_int (str_len);
   mpi::barrier ();
 
-  const size_t slen = str_len(0);
+  const size_t slen = str_len;
   char* cstr = new char [slen]; 
   std::strcpy (cstr, data.c_str());
   
@@ -87,41 +135,13 @@ void broadcast_string (std::string& data)
 
   delete [] cstr;
   
-//  return ret_data;
-  
 }
 
 
-void reduce_dbl_sum (arma::vec& data)
-{
-
-  const size_t count = data.n_elem;
-  arma::vec recv_data(count);
-  recv_data.zeros();
-  
-  MPI::COMM_WORLD.Reduce (data.memptr(), recv_data.memptr(),
-			  count, MPI::DOUBLE, MPI::SUM, 0);
-
-  data = recv_data;
-};
-
-
-void reduce_int_sum (arma::ivec& data)
-{
-  const size_t count = data.n_elem;
-  arma::ivec recv_data(count);
-  recv_data.zeros();
-  
-  MPI::COMM_WORLD.Reduce (data.memptr(), recv_data.memptr(), count,
-			  MPI::INT, MPI::SUM, 0);
-
-  data = recv_data;
-  
-};
 
 
 
-void reduce_dbl_sum_1 (double& data)
+void reduce_dbl_sum (double& data)
 {
 
   double recv_data = 0.0;
@@ -132,7 +152,22 @@ void reduce_dbl_sum_1 (double& data)
 
   data = recv_data;
   
-};
+}
+
+
+
+void reduce_dbl_vec_sum (arma::vec& data)
+{
+
+  const size_t count = data.n_elem;
+  arma::vec recv_data(count);
+  recv_data.zeros();
+  
+  MPI::COMM_WORLD.Reduce (data.memptr(), recv_data.memptr(),
+			  count, MPI::DOUBLE, MPI::SUM, 0);
+
+  data = recv_data;
+}
 
 
 
@@ -151,7 +186,120 @@ void reduce_dbl_mat_sum (arma::mat& data)
 			  count, MPI::DOUBLE, MPI::SUM, 0);
 
   data = recv_data;
-};
+}
+
+
+
+
+void reduce_dbl_cube_sum(arma::cube& data)
+{
+
+  const size_t n_rows = data.n_rows;
+  const size_t n_cols = data.n_cols;
+  const size_t n_slices = data.n_slices;
+  
+  const size_t count = data.n_elem;
+  arma::cube recv_data(n_rows, n_cols, n_slices, arma::fill::zeros);
+  
+  MPI::COMM_WORLD.Reduce (data.memptr(), recv_data.memptr(),
+			  count, MPI::DOUBLE, MPI::SUM, 0);
+
+  data = recv_data;
+}
+
+
+void reduce_int_sum (int& data)
+{
+
+  int      recv_data = 0.0;
+  const size_t count = 1;
+  
+  MPI::COMM_WORLD.Reduce (&data, &recv_data,
+			  count, MPI::INT, MPI::SUM, 0);
+
+  data = recv_data;
+  
+}
+
+
+
+
+void reduce_int_vec_sum (arma::ivec& data)
+{
+  const size_t count = data.n_elem;
+  arma::ivec recv_data(count);
+  recv_data.zeros();
+  
+  MPI::COMM_WORLD.Reduce (data.memptr(), recv_data.memptr(), count,
+			  MPI::INT, MPI::SUM, 0);
+
+  data = recv_data;
+  
+}
+
+
+
+void allreduce_int_sum (int& data)
+{
+  
+  int recv_data = 0.0;
+  const size_t count = 1;
+  
+  MPI::COMM_WORLD.Allreduce (&data, &recv_data,
+			     count, MPI::INT, MPI::SUM);
+  
+  data = recv_data;
+  
+}
+
+
+
+void allreduce_dbl_sum (double& data)
+{
+  
+  double recv_data = 0.0;
+  const size_t count = 1;
+  
+  MPI::COMM_WORLD.Allreduce (&data, &recv_data,
+			     count, MPI::DOUBLE, MPI::SUM);
+  
+  data = recv_data;
+  
+}
+
+
+
+void allreduce_dbl_vec_sum (arma::vec& data)
+{
+
+  const size_t count = data.n_elem;
+  arma::vec recv_data(count);
+  recv_data.zeros();
+  
+  MPI::COMM_WORLD.Allreduce (data.memptr(), recv_data.memptr(),
+			     count, MPI::DOUBLE, MPI::SUM);
+
+  data = recv_data;
+}
+
+
+
+
+void allreduce_dbl_mat_sum (arma::mat& data)
+{
+
+  const size_t n_rows = data.n_rows;
+  const size_t n_cols = data.n_cols;
+  const size_t count = data.n_elem;
+  arma::mat recv_data(n_rows, n_cols);
+  
+  recv_data.zeros();
+  
+  MPI::COMM_WORLD.Allreduce (data.memptr(), recv_data.memptr(),
+			     count, MPI::DOUBLE, MPI::SUM);
+
+  data = recv_data;
+}
 
 
 
